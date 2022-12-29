@@ -9,10 +9,10 @@
       this.ctx = this.canvas.getContext("2d");
       this.width = 700;
       this.height = 411;
-      this.minSize = 20; // 크롭한 이미지의 최소 사이즈 설정
+      this.minSize = 20;
       this.canvas.width = this.width;
       this.canvas.height = this.height;
-      this.ctx.lineWidth = 4; // 크롭할때의 선굵기 설정
+      this.ctx.lineWidth = 4;
       this.ctx.strokeStyle = "#ff0000";
       this.targetImage = get(".image_wrap");
       this.targetCanvas = document.createElement("canvas");
@@ -34,14 +34,78 @@
       this.fileEvent();
       this.drawEvent();
     }
-    clickEvent() {}
-    flipEvent() {}
-    sepiaEvent() {}
-    grayEvent() {}
-    saveEvent() {}
+
+    clickEvent() {
+      this.btnFlip.addEventListener("click", this.flipEvent.bind(this));
+      this.btnSepia.addEventListener("click", this.sepiaEvent.bind(this));
+      this.btnGray.addEventListener("click", this.grayEvent.bind(this));
+      this.btnSave.addEventListener("click", this.download.bind(this));
+    }
+
+    flipEvent() {
+      this.targetCtx.translate(this.targetWidth, 0);
+      this.targetCtx.scale(-1, 1);
+      this.targetCtx.drawImage(
+        this.img,
+        this.sourceX,
+        this.sourceY,
+        this.sourceWidth,
+        this.sourceHeight,
+        0,
+        0,
+        this.targetWidth,
+        this.targetHeight
+      );
+    }
+
+    sepiaEvent() {
+      this.targetCtx.clearRect(0, 0, this.targetWidth, this.targetHeight);
+      this.targetCtx.filter = "sepia(1)";
+      this.targetCtx.drawImage(
+        this.img,
+        this.sourceX,
+        this.sourceY,
+        this.sourceWidth,
+        this.sourceHeight,
+        0,
+        0,
+        this.targetWidth,
+        this.targetHeight
+      );
+    }
+
+    grayEvent() {
+      this.targetCtx.clearRect(0, 0, this.targetWidth, this.targetHeight);
+      this.targetCtx.filter = "grayscale(1)";
+      this.targetCtx.drawImage(
+        this.img,
+        this.sourceX,
+        this.sourceY,
+        this.sourceWidth,
+        this.sourceHeight,
+        0,
+        0,
+        this.targetWidth,
+        this.targetHeight
+      );
+    }
+
+    download() {
+      const url = this.targetCanvas.toDataURL();
+      const downloader = document.createElement("a");
+      downloader.style.display = "none";
+      downloader.setAttribute("href", url);
+      downloader.setAttribute("download", "canvas.png");
+      this.container.appendChild(downloader);
+      downloader.click();
+      setTimeout(() => {
+        this.container.removeChild(downloader);
+      }, 100);
+    }
+
     fileEvent() {
-      this.fileInput.addEventListener("change", (e) => {
-        const fileName = URL.createObjectURL(e.target.files[0]);
+      this.fileInput.addEventListener("change", (event) => {
+        const fileName = URL.createObjectURL(event.target.files[0]);
         const img = new Image();
         img.addEventListener("load", (e) => {
           this.width = e.path[0].naturalWidth;
@@ -51,21 +115,22 @@
         img.setAttribute("src", fileName);
       });
     }
+
     drawEvent() {
       const canvasX = this.canvas.getBoundingClientRect().left;
       const canvasY = this.canvas.getBoundingClientRect().top;
-      let sX, sY, eX, eY; // start X, Y & end X, Y 지점 선언
-      let drawStart = false; // draw를 시작했는지에 대한 여부를 지정해준다
+      let sX, sY, eX, eY;
+      let drawStart = false;
 
       this.canvas.addEventListener("mousedown", (e) => {
-        sX = parseInt(e.clientX - canvasX, 10); // e.clientX 는 마우스의 X 좌표를 불러온다, 10은 10진수로 표현하기 위함
+        sX = parseInt(e.clientX - canvasX, 10);
         sY = parseInt(e.clientY - canvasY, 10);
         drawStart = true;
       });
 
       this.canvas.addEventListener("mousemove", (e) => {
         if (!drawStart) return;
-        eX = parseInt(e.clientX - canvasX, 10); // e.clientX 는 마우스의 X 좌표를 불러온다, 10은 10진수로 표현하기 위함
+        eX = parseInt(e.clientX - canvasX, 10);
         eY = parseInt(e.clientY - canvasY, 10);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.strokeRect(sX, sY, eX - sX, eY - sY);
@@ -114,7 +179,6 @@
           this.targetHeight
         );
       });
-
       this.img.src = this.fileImage.getAttribute("src");
       this.targetImage.appendChild(this.targetCanvas);
     }
