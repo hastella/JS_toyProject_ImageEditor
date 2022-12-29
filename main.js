@@ -41,7 +41,7 @@
     saveEvent() {}
     fileEvent() {
       this.fileInput.addEventListener("change", (event) => {
-        const fileName = URL.createObjectURL(event.target.file[0]);
+        const fileName = URL.createObjectURL(event.target.files[0]);
         const img = new Image();
         img.addEventListener("load", (e) => {
           this.width = e.path[0].naturalWidth;
